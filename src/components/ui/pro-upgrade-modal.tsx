@@ -12,9 +12,7 @@ interface Customer {
   subscriptions?: Array<{ productId: string }>;
 }
 
-interface AttachError {
-  message?: string;
-}
+
 
 export function ProUpgradeModal({ isOpen, onClose }: ProUpgradeModalProps) {
   const { customer, attach } = useCustomer();

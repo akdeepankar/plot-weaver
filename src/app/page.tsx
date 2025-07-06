@@ -256,7 +256,7 @@ export default function Home() {
 
   // Close word popup when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = () => {
       if (wordPopup && wordPopup.isOpen) {
         setWordPopup(null);
       }
@@ -669,7 +669,7 @@ export default function Home() {
       try {
         const { ContextDetector } = await import('@/lib/context-detector');
         contextData = await ContextDetector.getContextData();
-      } catch (contextError) {
+      } catch {
         console.log('Context detection failed, proceeding without context');
       }
       
@@ -749,7 +749,7 @@ export default function Home() {
       try {
         const { ContextDetector } = await import('@/lib/context-detector');
         contextData = await ContextDetector.getContextData();
-      } catch (contextError) {
+      } catch {
         console.log('Context detection failed, proceeding without context');
       }
       
