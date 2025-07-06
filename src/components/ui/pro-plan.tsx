@@ -125,7 +125,7 @@ export function ProPlan({ onStoryGenerated, className = "" }: ProPlanProps) {
         {!isPro && getRemainingStories() <= 0 && (
           <div className="text-center">
             <p className="text-sm text-red-600 mb-2">
-              You've used all your free stories!
+              You&apos;ve used all your free stories!
             </p>
             <button
               onClick={handleUpgradeToPro}

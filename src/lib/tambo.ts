@@ -10,11 +10,11 @@
 
 import Firecrawl, { firecrawlSchema } from "@/components/firecrawl";
 import { DataCard, dataCardSchema } from "@/components/ui/card-data";
-import { FormComponent, formVariants, formSchema } from "@/components/ui/form";
+import { FormComponent, formSchema } from "@/components/ui/form";
 import { Graph, graphSchema } from "@/components/ui/graph";
 import type { TamboComponent } from "@tambo-ai/react";
 import { TamboTool } from "@tambo-ai/react";
-import z from "zod";
+
 import Tavily, { tavilySchema } from "@/components/tavily";
 import Podcast, { podcastSchema } from "@/components/podcast";
 import MyWords, { myWordsSchema } from '@/components/ui/my-words';

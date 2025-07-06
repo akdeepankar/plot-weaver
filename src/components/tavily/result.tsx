@@ -2,7 +2,12 @@
 import type { TavilyExtractResponse } from "./form";
 import React, { useState } from "react";
 
-function parseFlashcards(flashcards: any): Array<{ front: string; back: string }> {
+interface Flashcard {
+  front: string;
+  back: string;
+}
+
+function parseFlashcards(flashcards: Flashcard[] | string | unknown): Array<{ front: string; back: string }> {
   if (Array.isArray(flashcards)) {
     // If it's a single wrapper card, extract from its back
     if (
@@ -13,7 +18,7 @@ function parseFlashcards(flashcards: any): Array<{ front: string; back: string }
     ) {
       // Try to extract JSON array from the back property
       const match = flashcards[0].back.match(/```json([\s\S]*?)```/);
-      let jsonString = match ? match[1] : flashcards[0].back;
+      const jsonString = match ? match[1] : flashcards[0].back;
       try {
         const parsed = JSON.parse(jsonString);
         if (Array.isArray(parsed)) return parsed;
@@ -32,7 +37,7 @@ function parseFlashcards(flashcards: any): Array<{ front: string; back: string }
   if (typeof flashcards === "string") {
     // Try to extract JSON from the string (e.g., if it's in a markdown code block)
     const match = flashcards.match(/```json([\s\S]*?)```/);
-    let jsonString = match ? match[1] : flashcards;
+    const jsonString = match ? match[1] : flashcards;
     try {
       const parsed = JSON.parse(jsonString);
       if (Array.isArray(parsed)) return parsed;

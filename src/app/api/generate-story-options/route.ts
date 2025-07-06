@@ -7,7 +7,7 @@ const openai = new OpenAI({
 
 export async function POST(request: NextRequest) {
   try {
-    const { prompt, profile, storySoFar, currentParagraph, locale = 'en' } = await request.json();
+    const { profile, storySoFar, currentParagraph, locale = 'en' } = await request.json();
 
     const profileContext = {
       explorer: "Focus on adventure, discovery, and exciting new developments.",

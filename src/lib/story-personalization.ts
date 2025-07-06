@@ -95,7 +95,7 @@ export class StoryPersonalization {
     return enhancedPrompt;
   }
   
-  static getPersonalizedStoryOptions(storyContext: string): string[] {
+  static getPersonalizedStoryOptions(): string[] {
     const prefs = UserPreferencesManager.getPreferences();
     const archetype = prefs.archetype;
     

@@ -8,17 +8,25 @@ interface ProUpgradeModalProps {
   onClose: () => void;
 }
 
+interface Customer {
+  subscriptions?: Array<{ productId: string }>;
+}
+
+interface AttachError {
+  message?: string;
+}
+
 export function ProUpgradeModal({ isOpen, onClose }: ProUpgradeModalProps) {
-  const { customer, allowed, refetch, attach } = useCustomer();
+  const { customer, attach } = useCustomer();
   const [isLoading, setIsLoading] = useState(false);
 
   // Check if user became Pro and grant credits
   useEffect(() => {
     const checkAndGrantCredits = async () => {
       console.log("Checking customer status:", customer);
-      console.log("Customer subscriptions:", customer && (customer as any).subscriptions);
+      console.log("Customer subscriptions:", customer && (customer as Customer).subscriptions);
       
-      if (customer && (customer as any).subscriptions?.some((sub: any) => sub.productId === "pro")) {
+      if (customer && (customer as Customer).subscriptions?.some((sub: { productId: string }) => sub.productId === "pro")) {
         console.log("User is Pro, checking if credits need to be granted...");
         // User is Pro, grant credits if not already granted
         const hasBeenGranted = localStorage.getItem("proCreditsGranted");
@@ -48,7 +56,7 @@ export function ProUpgradeModal({ isOpen, onClose }: ProUpgradeModalProps) {
       console.log("Current customer:", customer);
       
       // Check if user is already Pro
-      const isAlreadyPro = customer && (customer as any).subscriptions?.some((sub: any) => sub.productId === "pro");
+      const isAlreadyPro = customer && (customer as Customer).subscriptions?.some((sub: { productId: string }) => sub.productId === "pro");
       console.log("Is already Pro:", isAlreadyPro);
       
       if (!isAlreadyPro) {
@@ -63,10 +71,13 @@ export function ProUpgradeModal({ isOpen, onClose }: ProUpgradeModalProps) {
           
           console.log("Successfully upgraded to Pro - usage count reset to 0");
           
-        } catch (attachError: any) {
+        } catch (attachError: unknown) {
           console.log("Attach error:", attachError);
           // If attachment fails due to already being attached, that's okay
-          if (attachError?.message?.includes("already attached") || attachError?.message?.includes("Product Pro is already attached")) {
+          const errorMessage = attachError && typeof attachError === 'object' && 'message' in attachError 
+            ? String(attachError.message) 
+            : '';
+          if (errorMessage.includes("already attached") || errorMessage.includes("Product Pro is already attached")) {
             console.log("Product already attached, granting Pro benefits anyway");
             
             // Grant Pro benefits even if already attached
@@ -94,7 +105,7 @@ export function ProUpgradeModal({ isOpen, onClose }: ProUpgradeModalProps) {
     }
   };
 
-  const isPro = customer && (customer as any).subscriptions?.some((sub: any) => sub.productId === "pro");
+  const isPro = customer && (customer as Customer).subscriptions?.some((sub: { productId: string }) => sub.productId === "pro");
 
   if (!isOpen) return null;
 
@@ -123,7 +134,7 @@ export function ProUpgradeModal({ isOpen, onClose }: ProUpgradeModalProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">You're Already Pro!</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">You&apos;re Already Pro!</h3>
               <p className="text-gray-600 mb-6">
                 You have unlimited access to story generation and all Pro features.
               </p>

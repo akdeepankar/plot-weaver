@@ -4,7 +4,7 @@ import { useState } from "react";
 
 export interface TavilyExtractResponse {
   content: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export default function TavilyForm({
@@ -33,7 +33,7 @@ export default function TavilyForm({
           `Extraction failed:\n\n${data?.error?.message || "No content returned or unknown error"}`
         );
       }
-    } catch (err) {
+    } catch {
       window.alert("Extraction failed: Network error");
     }
     setIsLoading(false);

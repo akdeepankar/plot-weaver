@@ -32,7 +32,7 @@ export default function PodcastForm({
           `Audiobook generation failed:\n\n${data?.error?.message || "No script or audio returned or unknown error"}`
         );
       }
-    } catch (err) {
+    } catch {
       window.alert("Audiobook generation failed: Network error");
     }
     setIsLoading(false);

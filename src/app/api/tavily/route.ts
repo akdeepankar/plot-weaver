@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     try {
       const text = completion.choices[0].message.content || "";
       flashcards = JSON.parse(text);
-    } catch (e) {
+    } catch {
       // fallback: return as plain text if not valid JSON
       // Ensure flashcards is always an array to satisfy type
       const fallbackContent = completion.choices[0].message.content;

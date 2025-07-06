@@ -12,16 +12,34 @@ import { CustomerInit } from "@/components/ui/customer-init";
 import { useCustomer } from "autumn-js/react";
 import { getCustomerId } from "@/lib/autumn-client";
 import { UserPreferencesManager } from "@/lib/user-preferences";
-import { StoryPersonalization } from "@/lib/story-personalization";
 import { LearningSystem } from "@/lib/learning-system";
 
-const STORY_TYPES = [
-  { label: "Fairy Tale", prompt: "Write a fairy tale about a brave mouse." },
-  { label: "Sci-Fi", prompt: "Write a science fiction story set on Mars." },
-  { label: "Mystery", prompt: "Write a mystery story involving a missing painting." },
-  { label: "Adventure", prompt: "Write an adventure story about a lost treasure." },
-  { label: "Custom", prompt: "" },
-];
+// Add type definitions at the top
+interface Storyline {
+  title: string;
+  prompt: string;
+}
+
+interface SavedStory {
+  id: string;
+  title: string;
+  content: string[];
+  date: string;
+  archetype: string;
+}
+
+interface WordPopup {
+  word: string;
+  definition: string;
+  isOpen: boolean;
+  position: { x: number; y: number };
+}
+
+interface Customer {
+  subscriptions?: Array<{ productId: string }>;
+  products?: Array<{ id: string }>;
+  attachments?: Array<{ productId: string }>;
+}
 
 const STORYLINES_BY_ARCHETYPE = {
   explorer: [
@@ -107,7 +125,7 @@ const QUIZ_QUESTIONS = [
 
 export default function Home() {
   const { locale, setLocale, t } = useLocalization();
-  const { customer, allowed, refetch, check, track } = useCustomer();
+  const { customer } = useCustomer();
   const [isProUser, setIsProUser] = useState(false);
   
   const getArchetypeTheme = (archetype: string) => {
@@ -177,10 +195,6 @@ export default function Home() {
     
     return titleMap[originalTitle] || originalTitle;
   };
-  const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [customPrompt, setCustomPrompt] = useState("");
-  const [story, setStory] = useState<string>("");
-  const [loading, setLoading] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [scores, setScores] = useState({ explorer: 0, philosopher: 0, survivor: 0, caregiver: 0 });
@@ -188,7 +202,7 @@ export default function Home() {
   const [showResetPopup, setShowResetPopup] = useState(false);
   const [quizStarted, setQuizStarted] = useState(false);
   const [showSetupPopup, setShowSetupPopup] = useState(false);
-  const [selectedStoryline, setSelectedStoryline] = useState<any>(null);
+  const [selectedStoryline, setSelectedStoryline] = useState<Storyline | null>(null);
   const [currentParagraph, setCurrentParagraph] = useState(0);
   const [storyCards, setStoryCards] = useState<string[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -204,25 +218,14 @@ export default function Home() {
   const [dyslexiaFriendly, setDyslexiaFriendly] = useState(false);
   const [clickableWords, setClickableWords] = useState(false);
   const [showCustomStory, setShowCustomStory] = useState(false);
-  const [wordPopup, setWordPopup] = useState<{
-    word: string;
-    definition: string;
-    isOpen: boolean;
-    position: { x: number; y: number };
-  } | null>(null);
+  const [wordPopup, setWordPopup] = useState<WordPopup | null>(null);
   const [customStoryPrompt, setCustomStoryPrompt] = useState("");
   const [showProUpgradeModal, setShowProUpgradeModal] = useState(false);
   const [localUsageCount, setLocalUsageCount] = useState(0);
   const [customerId, setCustomerId] = useState<string>("");
   const [showUserSettings, setShowUserSettings] = useState(false);
   const [sidebarTab, setSidebarTab] = useState<'starters' | 'saved'>('starters');
-  const [savedStories, setSavedStories] = useState<Array<{
-    id: string;
-    title: string;
-    content: string[];
-    date: string;
-    archetype: string;
-  }>>([]);
+  const [savedStories, setSavedStories] = useState<SavedStory[]>([]);
   const [showSaveNotification, setShowSaveNotification] = useState(false);
 
   // Load usage count from localStorage
@@ -277,13 +280,13 @@ export default function Home() {
     const checkProProduct = () => {
       console.log("Checking Pro status...");
       console.log("Customer data:", customer);
-      console.log("Customer subscriptions:", customer && (customer as any).subscriptions);
+      console.log("Customer subscriptions:", customer && (customer as Customer).subscriptions);
       
       // Check multiple possible ways Pro status might be stored
       const hasProSubscription = customer && (
-        (customer as any).subscriptions?.some((sub: any) => sub.productId === "pro") ||
-        (customer as any).products?.some((prod: any) => prod.id === "pro") ||
-        (customer as any).attachments?.some((att: any) => att.productId === "pro")
+        (customer as Customer).subscriptions?.some((sub: { productId: string }) => sub.productId === "pro") ||
+        (customer as Customer).products?.some((prod: { id: string }) => prod.id === "pro") ||
+        (customer as Customer).attachments?.some((att: { productId: string }) => att.productId === "pro")
       );
       
       console.log("Has Pro subscription:", hasProSubscription);
@@ -397,7 +400,7 @@ export default function Home() {
   };
 
   // Load saved story
-  const loadSavedStory = (story: any) => {
+  const loadSavedStory = (story: SavedStory) => {
     setSelectedStoryline({ title: story.title, prompt: story.title });
     setStoryCards(story.content);
     setCurrentParagraph(0);
@@ -639,7 +642,7 @@ export default function Home() {
   };
 
 
-  const handleStreamingStory = async (storyline: any) => {
+  const handleStreamingStory = async (storyline: Storyline) => {
     // Clear all story data when selecting a different storyline
     setStoryCards([]);
     setCurrentParagraph(0);
@@ -666,7 +669,7 @@ export default function Home() {
       try {
         const { ContextDetector } = await import('@/lib/context-detector');
         contextData = await ContextDetector.getContextData();
-      } catch (error) {
+      } catch (contextError) {
         console.log('Context detection failed, proceeding without context');
       }
       
@@ -746,7 +749,7 @@ export default function Home() {
       try {
         const { ContextDetector } = await import('@/lib/context-detector');
         contextData = await ContextDetector.getContextData();
-      } catch (error) {
+      } catch (contextError) {
         console.log('Context detection failed, proceeding without context');
       }
       
@@ -754,7 +757,7 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          prompt: selectedStoryline.prompt, 
+          prompt: selectedStoryline!.prompt, 
           profile: userProfile,
           mood,
           paragraphIndex: currentParagraph + 1,
@@ -792,7 +795,7 @@ export default function Home() {
       const newStoryCards = [...storyCards, accumulatedContent];
       if (newStoryCards.length >= 3) {
         // Auto-save the story
-        saveStory(selectedStoryline.title, newStoryCards, userProfile || 'default');
+        saveStory(selectedStoryline!.title, newStoryCards, userProfile || 'default');
       }
       
       // Generate story options after completing a paragraph
@@ -809,7 +812,7 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          prompt: selectedStoryline.prompt, 
+          prompt: selectedStoryline!.prompt, 
           profile: userProfile,
           storySoFar: storyCards.join('\n\n'),
           currentParagraph: storyCards[storyCards.length - 1],
@@ -1356,7 +1359,7 @@ export default function Home() {
                   <div className="space-y-2">
                     {storyCards.length === 0 && !isStreaming && (
                       <button
-                        onClick={() => handleStreamingStory(selectedStoryline)}
+                        onClick={() => handleStreamingStory(selectedStoryline!)}
                         disabled={localUsageCount >= getCreditLimit()}
                         className={`w-full py-2 rounded-lg font-semibold transition-all ${
                           localUsageCount >= getCreditLimit()
@@ -1455,7 +1458,7 @@ export default function Home() {
                   {storyCards.length > 0 && !isStreaming && (
                     <div className="mt-3">
                       <button
-                        onClick={() => saveStory(selectedStoryline.title, storyCards, userProfile || 'default')}
+                        onClick={() => saveStory(selectedStoryline!.title, storyCards, userProfile || 'default')}
                         className={`w-full py-2 rounded-lg font-semibold transition-all ${
                           theme.button
                         } text-white hover:scale-105`}
