@@ -127,12 +127,15 @@ export const SUPPORTED_LOCALES = {
 
 export type Locale = keyof typeof SUPPORTED_LOCALES;
 
+// Define a more specific type for translation content
+export type TranslationContent = Record<string, string | number | boolean | Record<string, unknown>>;
+
 // Localization context type
 export interface LocalizationContextType {
   locale: Locale;
   setLocale: (locale: Locale) => void;
   t: (key: string, params?: Record<string, string | number>) => string;
-  translateObject: <T extends Record<string, any>>(obj: T) => Promise<T>;
+  translateObject: <T extends Record<string, unknown>>(obj: T) => Promise<T>;
 }
 
 // Sample translations for demonstration
@@ -602,14 +605,14 @@ const SAMPLE_TRANSLATIONS = {
 };
 
 // Cache for translated content
-const translationCache = new Map<string, any>();
+const translationCache = new Map<string, Record<string, unknown>>();
 
 // Main localization function
 export async function localizeContent(
-  content: Record<string, any>,
+  content: Record<string, unknown>,
   targetLocale: Locale,
   sourceLocale: Locale = "en"
-): Promise<Record<string, any>> {
+): Promise<Record<string, unknown>> {
   if (targetLocale === sourceLocale) {
     return content;
   }
@@ -617,7 +620,8 @@ export async function localizeContent(
   const cacheKey = `${sourceLocale}-${targetLocale}-${JSON.stringify(content)}`;
   
   if (translationCache.has(cacheKey)) {
-    return translationCache.get(cacheKey);
+    const cached = translationCache.get(cacheKey);
+    return cached || content;
   }
 
   try {
@@ -667,7 +671,7 @@ export function translateKey(
 // Hook for React components
 export function useLocalization() {
   const [locale, setLocale] = useState<Locale>("en");
-  const [translations, setTranslations] = useState<Record<string, any>>(LOCALIZATION_CONTENT);
+  const [translations, setTranslations] = useState<Record<string, unknown>>(LOCALIZATION_CONTENT);
 
   useEffect(() => {
     if (locale === "en") {
@@ -684,11 +688,14 @@ export function useLocalization() {
 
   const t = useCallback((key: string, params?: Record<string, string | number>) => {
     const keys = key.split('.');
-    let value = translations;
+    let value: unknown = translations;
     
     for (const k of keys) {
-      value = value?.[k];
-      if (value === undefined) return key;
+      if (typeof value === 'object' && value !== null && k in value) {
+        value = (value as Record<string, unknown>)[k];
+      } else {
+        return key;
+      }
     }
     
     let text = String(value);
@@ -702,7 +709,7 @@ export function useLocalization() {
     return text;
   }, [translations]);
 
-  const translateObject = useCallback(async <T extends Record<string, any>>(obj: T): Promise<T> => {
+  const translateObject = useCallback(async <T extends Record<string, unknown>>(obj: T): Promise<T> => {
     if (locale === "en") return obj;
     const translated = await localizeContent(obj, locale);
     return translated as T;

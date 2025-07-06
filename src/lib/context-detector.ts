@@ -168,7 +168,7 @@ export class ContextDetector {
     }
   }
   
-  private static getLocationEmoji(location: any): string {
+  private static getLocationEmoji(location: { city?: string; country?: string; timezone?: string; coordinates?: { lat: number; lng: number } }): string {
     if (location.city) {
       // Return city-specific emoji or generic location emoji
       return '📍';

@@ -26,7 +26,7 @@ export interface ReadingPattern {
 
 export interface PreferenceHistory {
   category: string;
-  value: any;
+  value: string | number | boolean | string[];
   timestamp: Date;
   source: 'quiz' | 'manual' | 'inferred';
 }
@@ -65,7 +65,7 @@ export class LearningSystem {
     this.saveBehaviorData(behavior);
   }
   
-  static trackPreferenceChange(category: string, value: any, source: 'quiz' | 'manual' | 'inferred'): void {
+  static trackPreferenceChange(category: string, value: string | number | boolean | string[], source: 'quiz' | 'manual' | 'inferred'): void {
     if (typeof window === 'undefined') return;
     
     const behavior = this.getBehaviorData();
@@ -186,7 +186,6 @@ export class LearningSystem {
   }
   
   static getPersonalizedGreeting(): string {
-    const behavior = this.getBehaviorData();
     const now = new Date();
     const hour = now.getHours();
     
@@ -227,10 +226,10 @@ export class LearningSystem {
     try {
       const parsed = JSON.parse(stored);
       return {
-        storyInteractions: parsed.storyInteractions?.map((i: any) => ({ ...i, timestamp: new Date(i.timestamp) })) || [],
+        storyInteractions: parsed.storyInteractions?.map((i: Record<string, unknown>) => ({ ...i, timestamp: new Date(i.timestamp as string) })) || [],
         readingPatterns: parsed.readingPatterns || [],
-        preferences: parsed.preferences?.map((p: any) => ({ ...p, timestamp: new Date(p.timestamp) })) || [],
-        sessionData: parsed.sessionData?.map((s: any) => ({ ...s, startTime: new Date(s.startTime), endTime: s.endTime ? new Date(s.endTime) : undefined })) || []
+        preferences: parsed.preferences?.map((p: Record<string, unknown>) => ({ ...p, timestamp: new Date(p.timestamp as string) })) || [],
+        sessionData: parsed.sessionData?.map((s: Record<string, unknown>) => ({ ...s, startTime: new Date(s.startTime as string), endTime: s.endTime ? new Date(s.endTime as string) : undefined })) || []
       };
     } catch {
       return {

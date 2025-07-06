@@ -107,7 +107,7 @@ export class UserPreferencesManager {
   }
   
   static setArchetype(archetype: string): void {
-    this.updatePreferences({ archetype: archetype as any });
+    this.updatePreferences({ archetype: archetype as UserPreferences['archetype'] });
   }
   
   static getStoryPromptEnhancement(): string {

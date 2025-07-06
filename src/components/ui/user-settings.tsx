@@ -8,15 +8,20 @@ interface UserSettingsProps {
   onPreferencesUpdate: () => void;
 }
 
+// Question interface for form rendering - using any for flexibility with dynamic form structures
+interface QuestionOption {
+  value: string | boolean | number;
+  label: string;
+  description: string;
+}
+
 export function UserSettings({ isOpen, onClose, onPreferencesUpdate }: UserSettingsProps) {
   const [preferences, setPreferences] = useState<UserPreferences>(DEFAULT_PREFERENCES);
   const [activeSection, setActiveSection] = useState('profile');
-  const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
     if (isOpen) {
       setPreferences(UserPreferencesManager.getPreferences());
-      setCurrentStep(0);
       setActiveSection('profile');
     }
   }, [isOpen]);
@@ -125,6 +130,7 @@ export function UserSettings({ isOpen, onClose, onPreferencesUpdate }: UserSetti
     }
   ];
 
+  // Using any for dynamic form question rendering - questions have varying structures
   const renderQuestion = (question: any) => {
     if (question.type === 'text') {
       return (
@@ -153,12 +159,12 @@ export function UserSettings({ isOpen, onClose, onPreferencesUpdate }: UserSetti
             {question.question}
           </label>
           <div className="grid grid-cols-1 gap-3">
-            {question.options.map((option: any) => (
-              <label key={option.value} className="flex items-start p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+            {question.options?.map((option: any) => (
+              <label key={String(option.value)} className="flex items-start p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                 <input
                   type="radio"
                   name={question.id}
-                  value={option.value}
+                  value={String(option.value)}
                   checked={preferences[question.id as keyof UserPreferences] === option.value}
                   onChange={(e) => setPreferences(prev => ({ 
                     ...prev, 
@@ -207,13 +213,13 @@ export function UserSettings({ isOpen, onClose, onPreferencesUpdate }: UserSetti
         <label className="block text-lg font-semibold text-gray-800">
           {question.question}
         </label>
-        <div className="grid grid-cols-1 gap-3">
-          {question.options.map((option: any) => (
-            <label key={option.value} className="flex items-start p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-              <input
-                type="radio"
-                name={question.id}
-                value={option.value}
+                  <div className="grid grid-cols-1 gap-3">
+            {question.options?.map((option: any) => (
+              <label key={String(option.value)} className="flex items-start p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                <input
+                  type="radio"
+                  name={question.id}
+                  value={String(option.value)}
                 checked={preferences[question.id as keyof UserPreferences] === option.value}
                 onChange={(e) => setPreferences(prev => ({ 
                   ...prev, 
@@ -244,7 +250,7 @@ export function UserSettings({ isOpen, onClose, onPreferencesUpdate }: UserSetti
             
             <div className="space-y-6">
               <div>
-                <label className="block text-lg font-semibold text-gray-800 mb-3">What's your name?</label>
+                <label className="block text-lg font-semibold text-gray-800 mb-3">What&apos;s your name?</label>
                 <input
                   type="text"
                   value={preferences.name || ''}
@@ -255,7 +261,7 @@ export function UserSettings({ isOpen, onClose, onPreferencesUpdate }: UserSetti
               </div>
               
               <div>
-                <label className="block text-lg font-semibold text-gray-800 mb-3">What's your cultural background?</label>
+                <label className="block text-lg font-semibold text-gray-800 mb-3">What&apos;s your cultural background?</label>
                 <input
                   type="text"
                   value={preferences.culturalBackground || ''}
