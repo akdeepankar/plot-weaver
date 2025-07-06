@@ -8,11 +8,23 @@ interface UserSettingsProps {
   onPreferencesUpdate: () => void;
 }
 
-// Question interface for form rendering - using any for flexibility with dynamic form structures
+// Question interface for form rendering
 interface QuestionOption {
   value: string | boolean | number;
   label: string;
   description: string;
+}
+
+// Dynamic question interface for flexible form structures
+interface DynamicQuestion {
+  id: string;
+  question: string;
+  type?: string;
+  options?: QuestionOption[];
+  placeholder?: string;
+  min?: number;
+  max?: number;
+  description?: string;
 }
 
 export function UserSettings({ isOpen, onClose, onPreferencesUpdate }: UserSettingsProps) {
@@ -130,8 +142,8 @@ export function UserSettings({ isOpen, onClose, onPreferencesUpdate }: UserSetti
     }
   ];
 
-  // Using any for dynamic form question rendering - questions have varying structures
-  const renderQuestion = (question: any) => {
+  // Using DynamicQuestion for flexible form question rendering
+  const renderQuestion = (question: DynamicQuestion) => {
     if (question.type === 'text') {
       return (
         <div key={question.id} className="space-y-3">
@@ -159,7 +171,7 @@ export function UserSettings({ isOpen, onClose, onPreferencesUpdate }: UserSetti
             {question.question}
           </label>
           <div className="grid grid-cols-1 gap-3">
-            {question.options?.map((option: any) => (
+            {question.options?.map((option: QuestionOption) => (
               <label key={String(option.value)} className="flex items-start p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                 <input
                   type="radio"
@@ -214,7 +226,7 @@ export function UserSettings({ isOpen, onClose, onPreferencesUpdate }: UserSetti
           {question.question}
         </label>
                   <div className="grid grid-cols-1 gap-3">
-            {question.options?.map((option: any) => (
+            {question.options?.map((option: QuestionOption) => (
               <label key={String(option.value)} className="flex items-start p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                 <input
                   type="radio"
